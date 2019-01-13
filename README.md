@@ -1,0 +1,2 @@
+A fun visualization made in D3 where pointes bounce around the svg from a random starting position and trajectory.
+When the distance between two points is below a certain threshold a line is drawn between the points.

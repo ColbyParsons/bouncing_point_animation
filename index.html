@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Bouncing Points</title>
+    <style>
+    	
+    </style>
+</head>
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script>
+    var data = [];
+
+    var margin = {"left":0,
+        		"right":0,
+        		"top":0,
+        		"bottom":0};
+
+    var body = d3.select("body");
+	var width = 1000;
+	var height = 500;
+	var speed = 1;
+	var radius = 4
+	var threshold = Math.pow(100,2);
+
+	var numPoints = 40;
+
+	var svg = body.append("svg")
+				  .attr("width", width)
+				  .attr("height", height);
+
+
+	for(i = 0; i < numPoints; i++){
+		var angle = Math.random()*2*Math.PI;
+		var x = Math.random()*(width - 2*radius)+radius;
+		var y = Math.random()*(height - 2*radius)+radius;
+		var dx = speed*Math.cos(angle);
+		var dy = speed*Math.sin(angle);
+		var obj = {"x":x,"y":y,"angle":angle,"dx":dx,"dy":dy};
+		data.push(obj)
+	}
+
+	var circles = svg.append("g")
+       				 .attr("fill","#000")
+				     .selectAll("circle")
+				     .data(data)
+				     .enter().append("circle")
+				     .attr("cx", d => d.x)
+				     .attr("cy", d => d.y)
+				     .attr("r",radius);
+
+	
+	var lineGroup = svg.append("g");
+
+    const sleep = (milliseconds) => {
+        return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
+    async function loop(timestamp) {
+        var dt = new Date();
+        var startTime = dt.getTime();
+
+    	for(i = 0; i < numPoints; i++){
+    		var point = data[i];
+    		if(point.x + point.dx + radius > width || point.x + point.dx - radius< 0){
+    			point.dx = -point.dx;
+    		}
+    		if(point.y + point.dy + radius > height || point.y + point.dy - radius < 0){
+    			point.dy = -point.dy;
+    		}
+    		point.y += point.dy;
+    		point.x += point.dx;
+    	}
+    	
+    	circles.attr("cx",d => d.x)
+    		   .attr("cy", d => d.y);
+
+
+    	lineGroup.selectAll("line")
+    			 .remove();
+
+    	for(j = 0; j < numPoints; j++){
+    		var point1 = data[j];
+    		for(k = j; k < numPoints; k++){
+    			if(k ==j) continue;
+    			var point2 = data[k];
+    			if(Math.pow(point1.x - point2.x,2) + Math.pow(point1.y - point2.y,2) < threshold){
+    				lineGroup.append("line")
+    						 .attr("x1",point1.x)
+    						 .attr("x2",point2.x)
+    						 .attr("y1",point1.y)
+    						 .attr("y2",point2.y)
+    						 .style("stroke-width",2)
+    						 .style("stroke","#000")
+    						 .attr("fill", "none");
+
+    			}
+    		}
+    	}
+
+        var et = new Date();
+        var endTime = et.getTime();
+
+        if(et - dt < 16){
+            await sleep(16 - (et- dt));
+        }
+    	
+
+
+		window.requestAnimationFrame(loop)
+	}
+
+	window.requestAnimationFrame(loop)
+
+
+	
+</script>
+
+</body>
+</html> 
